@@ -247,7 +247,7 @@ describe "ResqueSpec Matchers" do
       Person.should_not have_schedule_size_of(2)
     end
 
-    context "with #in" do
+    context "with #with_queue" do
       let(:queue_name) { "test-queue" }
 
       before(:each) do
@@ -256,16 +256,16 @@ describe "ResqueSpec Matchers" do
 
       it "raises the appropriate exception" do
         lambda {
-          Person.should have_schedule_size_of(1).in("test-queue-bad")
+          Person.should have_schedule_size_of(1).with_queue("test-queue-bad")
         }.should raise_error(RSpec::Expectations::ExpectationNotMetError)
       end
 
       it "returns true if actual schedule size matches positive expectation" do
-        Person.should have_schedule_size_of(1).in("test-queue")
+        Person.should have_schedule_size_of(1).with_queue("test-queue")
       end
 
       it "returns true if actual schedule size matches negative expectation" do
-        Person.should_not have_schedule_size_of(2).in("test-queue")
+        Person.should_not have_schedule_size_of(2).with_queue("test-queue")
       end
     end
   end

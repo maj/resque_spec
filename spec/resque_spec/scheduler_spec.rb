@@ -198,6 +198,32 @@ describe ResqueSpec do
         end
       end
 
+      describe "with #enqueue_at_with_queue" do
+        let(:queue_name) { "test-queue" }
+
+        before do
+          Resque.enqueue_at_with_queue(queue_name, scheduled_at, NameFromClassMethod, 1)
+        end
+
+        it "should remove a scheduled item from the queue" do
+          Resque.remove_delayed(NameFromClassMethod, 1)
+          ResqueSpec.schedule_for(NameFromClassMethod).should be_empty
+          ResqueSpec.schedule_for_queue("test-queue").should be_empty
+        end
+
+        it "should return the number of removed items" do
+          Resque.remove_delayed(NameFromClassMethod, 1).should == 1
+        end
+
+        it "removes item from all queues" do
+          Resque.enqueue_at_with_queue("test-queue-2", scheduled_at, NameFromClassMethod, 1)
+          Resque.remove_delayed(NameFromClassMethod, 1).should == 2
+          ResqueSpec.schedule_for(NameFromClassMethod).should be_empty
+          ResqueSpec.schedule_for_queue("test-queue").should be_empty
+          ResqueSpec.schedule_for_queue("test-queue2").should be_empty
+        end
+      end
+
       describe "with #enqueue_in" do
         before do
           Timecop.freeze(Time.now)
@@ -211,6 +237,37 @@ describe ResqueSpec do
         it "should remove a scheduled item from the queue" do
           Resque.remove_delayed(NameFromClassMethod, 1)
           ResqueSpec.schedule_for(NameFromClassMethod).should be_empty
+        end
+
+        it "should return the number of removed items" do
+          Resque.remove_delayed(NameFromClassMethod, 1).should == 1
+        end
+
+        it "removes item from all queues" do
+          Resque.enqueue_in_with_queue("test-queue-2", scheduled_in, NameFromClassMethod, 1)
+          Resque.remove_delayed(NameFromClassMethod, 1).should == 2
+          ResqueSpec.schedule_for(NameFromClassMethod).should be_empty
+          ResqueSpec.schedule_for_queue("test-queue").should be_empty
+          ResqueSpec.schedule_for_queue("test-queue2").should be_empty
+        end
+      end
+
+      describe "with #enqueue_in" do
+        let(:queue_name) { "test-queue" }
+
+        before do
+          Timecop.freeze(Time.now)
+          Resque.enqueue_in_with_queue(queue_name, scheduled_in, NameFromClassMethod, 1)
+        end
+
+        after do
+          Timecop.return
+        end
+
+        it "should remove a scheduled item from the queue" do
+          Resque.remove_delayed(NameFromClassMethod, 1)
+          ResqueSpec.schedule_for(NameFromClassMethod).should be_empty
+          ResqueSpec.schedule_for_queue("test-queue").should be_empty
         end
 
         it "should return the number of removed items" do

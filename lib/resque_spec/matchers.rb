@@ -136,7 +136,7 @@ end
 
 RSpec::Matchers.define :have_schedule_size_of do |size|
 
-  chain :in do |queue_name|
+  chain :with_queue do |queue_name|
     @queue_name = queue_name
   end
 
