@@ -77,8 +77,13 @@ RSpec::Matchers.define :have_scheduled do |*expected_args|
     @time_info = "in #{@interval} seconds"
   end
 
+  chain :with_queue do |queue_name|
+    @queue_name = queue_name
+  end
+
   match do |actual|
-    ResqueSpec.schedule_for(actual).any? do |entry|
+    scheduled_entries = @queue_name ? ResqueSpec.schedule_for_queue(@queue_name) : ResqueSpec.schedule_for(actual)
+    scheduled_entries.any? do |entry|
       class_matches = entry[:class].to_s == actual.to_s
       args_match = expected_args == entry[:args]
 

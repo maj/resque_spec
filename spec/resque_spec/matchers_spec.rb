@@ -209,6 +209,23 @@ describe "ResqueSpec Matchers" do
         Person.should_not have_scheduled(first_name, last_name).in(interval + 5 * 60)
       end
     end
+
+    context "with #with_queue" do
+      let(:interval) { 10 * 60 }
+      let(:queue_name) { "test-queue" }
+
+      before(:each) do
+        Resque.enqueue_in_with_queue(queue_name, interval, Person, first_name, last_name)
+      end
+
+      it "returns true if arguments and interval matches positive expectation" do
+        Person.should have_scheduled(first_name, last_name).in(interval).with_queue(queue_name)
+      end
+
+      it "returns true if arguments and interval matches negative expectation" do
+        Person.should_not have_scheduled(first_name, last_name).in(interval).with_queue("test-queue-bad")
+      end
+    end
   end
 
   describe "#have_schedule_size_of" do
