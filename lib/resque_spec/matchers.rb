@@ -135,8 +135,14 @@ RSpec::Matchers.define :have_scheduled_at do |*expected_args|
 end
 
 RSpec::Matchers.define :have_schedule_size_of do |size|
+
+  chain :in do |queue_name|
+    @queue_name = queue_name
+  end
+
   match do |actual|
-    ResqueSpec.schedule_for(actual).size == size
+    scheduled_entries = @queue_name ? ResqueSpec.schedule_for_queue(@queue_name) : ResqueSpec.schedule_for(actual)
+    scheduled_entries.size == size
   end
 
   failure_message_for_should do |actual|

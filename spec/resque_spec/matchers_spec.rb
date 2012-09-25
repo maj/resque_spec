@@ -233,7 +233,7 @@ describe "ResqueSpec Matchers" do
       Resque.enqueue_at(Time.now + 5 * 60, Person, first_name, last_name)
     end
 
-    it "raises the approrpiate exception" do
+    it "raises the appropriate exception" do
       lambda {
         Person.should have_schedule_size_of(2)
       }.should raise_error(RSpec::Expectations::ExpectationNotMetError)
@@ -245,6 +245,28 @@ describe "ResqueSpec Matchers" do
 
     it "returns true if actual schedule size matches negative expectation" do
       Person.should_not have_schedule_size_of(2)
+    end
+
+    context "with #in" do
+      let(:queue_name) { "test-queue" }
+
+      before(:each) do
+        Resque.enqueue_at_with_queue(queue_name, Time.now + 5 * 60, Person, first_name, last_name)
+      end
+
+      it "raises the appropriate exception" do
+        lambda {
+          Person.should have_schedule_size_of(1).in("test-queue-bad")
+        }.should raise_error(RSpec::Expectations::ExpectationNotMetError)
+      end
+
+      it "returns true if actual schedule size matches positive expectation" do
+        Person.should have_schedule_size_of(1).in("test-queue")
+      end
+
+      it "returns true if actual schedule size matches negative expectation" do
+        Person.should_not have_schedule_size_of(2).in("test-queue")
+      end
     end
   end
 end
